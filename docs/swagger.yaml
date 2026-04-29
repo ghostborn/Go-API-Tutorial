@@ -1,0 +1,274 @@
+basePath: /
+definitions:
+  main.Book:
+    type: object
+  main.BookUpdate:
+    properties:
+      author:
+        example: 曹雪芹
+        type: string
+      quantity:
+        example: 10
+        type: integer
+      title:
+        example: 红楼梦
+        type: string
+    type: object
+  main.UserDTO:
+    description: 用于登录和注册
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: 基于 Gin + GORM 实现的企业级图书管理API
+  title: 图书管理系统 API
+  version: "1.0"
+paths:
+  /books:
+    get:
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页条数
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"message":"success","data":{"list":[],"total":0,"page":1,"size":10}}'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 分页查询图书
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 图书信息
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/main.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - token: []
+      summary: 添加图书
+  /books/{id}:
+    delete:
+      parameters:
+      - description: 图书ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - token: []
+      summary: 删除图书
+    get:
+      parameters:
+      - description: 图书ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"message":"success","data":{"id":0,"title":"","author":"","quantity":0}}'
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: '{"code":404,"message":"图书不存在","data":null}'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 根据ID获取图书
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 图书ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新内容
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/main.BookUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - token: []
+      summary: 更新图书信息
+  /books/batch:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 图书列表
+        in: body
+        name: books
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/main.Book'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - token: []
+      summary: 批量添加多本图书
+  /books/search:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"message":"success","data":{"keyword":"","count":0,"list":[]}}'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 模糊搜索图书
+  /checkout:
+    patch:
+      parameters:
+      - description: 图书ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - token: []
+      summary: 借阅图书（库存-1）
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: 登录成功返回 JWT Token
+      parameters:
+      - description: 登录信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/main.UserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"message":"success","data":"token字符串"}'
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: '{"code":401,"message":"账号或密码错误","data":null}'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 用户登录
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: 用户名唯一，密码加密存储
+      parameters:
+      - description: 注册信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/main.UserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"message":"success","data":"注册成功"}'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: '{"code":400,"message":"用户名已被注册","data":null}'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 用户注册
+  /return:
+    patch:
+      parameters:
+      - description: 图书ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - token: []
+      summary: 归还图书（库存+1）
+schemes:
+- http
+swagger: "2.0"
