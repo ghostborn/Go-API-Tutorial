@@ -539,11 +539,17 @@ func login(ctx *gin.Context) {
 // @BasePath        /
 // @schemes         http
 func main() {
+	// 生产模式，关闭调试警告
+	gin.SetMode(gin.ReleaseMode)
+
 	// 初始化
 	initDB()
 	initValidator()
 
 	router := gin.Default()
+
+	// 关闭信任代理警告
+	router.SetTrustedProxies(nil)
 
 	limiterConfig := tollbooth.NewLimiter(5, &limiter.ExpirableOptions{
 		DefaultExpirationTTL: time.Second,
